@@ -45,7 +45,7 @@ function logAndBroadcast(message, type = "info") {
 
 // Help ensure we have a running browser and active page
 async function ensureBrowser() {
-  if (!browser) {
+  if (!browser || (browser.isConnected && !browser.isConnected())) {
     logAndBroadcast("Launching real Chromium headed browser...", "info");
     browser = await chromium.launch({
       headless: false,
@@ -66,16 +66,16 @@ async function ensureBrowser() {
 app.get("/api/status", async (req, res) => {
   res.json({
     connected: true,
-    browserActive: !!browser,
+    browserActive: !!browser && (!browser.isConnected || browser.isConnected()),
     lastAction: lastActionStatus,
     logs: logsList,
-    currentUrl: page ? page.url() : "None"
+    currentUrl: page && !page.isClosed() ? page.url() : "None"
   });
 });
 
 // REST POST execution endpoint
 app.post("/api/action", async (req, res) => {
-  const { type, args } = req.body;
+  const { type, args = {} } = req.body || {};
   if (!type) {
     return res.status(400).json({ error: "Missing parameter 'type'" });
   }
@@ -102,12 +102,12 @@ app.post("/api/action", async (req, res) => {
         logAndBroadcast(`Navigating real browser to: ${destination}`, "info");
         await page.goto(destination, { waitUntil: "domcontentloaded", timeout: 20000 });
         
-        // Auto bypass cookie dialog on YouTube if visible
-        if (destination.includes("youtube.com")) {
+        // Auto bypass cookie dialog on YouTube or Google if visible
+        if (destination.includes("youtube.com") || destination.includes("google.com")) {
           try {
-            const consentBtn = page.locator('button:has-text("Reject all"), button:has-text("Accept all"), button:has-text("I agree")').first();
+            const consentBtn = page.locator('button:has-text("Reject all"), button:has-text("Accept all"), button:has-text("I agree"), div[role="none"]:has-text("Accept all")').first();
             if (await consentBtn.isVisible({ timeout: 1500 })) {
-              logAndBroadcast("Intercepted cookie consent box. Dismissing dialog...", "info");
+              logAndBroadcast("Intercepted cookie consent dialog. Dismissing...", "info");
               await consentBtn.click();
             }
           } catch (err) {}
@@ -132,6 +132,12 @@ app.post("/api/action", async (req, res) => {
           await ytInput.fill(query);
           await ytInput.press("Enter");
         } else if (currentUrl.includes("google.com")) {
+          try {
+            const consentBtn = page.locator('button:has-text("Accept all"), button:has-text("Reject all"), button:has-text("I agree")').first();
+            if (await consentBtn.isVisible({ timeout: 1500 })) {
+              await consentBtn.click();
+            }
+          } catch (err) {}
           const googleInput = page.locator('textarea[name="q"], input[name="q"]').first();
           await googleInput.waitFor({ state: "visible", timeout: 5000 });
           await googleInput.fill(query);
@@ -139,8 +145,13 @@ app.post("/api/action", async (req, res) => {
         } else {
           // General input heuristic search
           const generalInput = page.locator('input[type="text"], input[type="search"]').first();
-          await generalInput.fill(query);
-          await generalInput.press("Enter");
+          if (await generalInput.isVisible({ timeout: 2000 })) {
+            await generalInput.fill(query);
+            await generalInput.press("Enter");
+          } else {
+            // Direct navigate fallback to Google Search
+            await page.goto(`https://www.google.com/search?q=${encodeURIComponent(query)}`, { waitUntil: "domcontentloaded" });
+          }
         }
 
         logAndBroadcast(`Search query submitted for: "${query}"`, "success");
