@@ -1,0 +1,9 @@
+{
+  "userName": "",
+  "autoStart": false,
+  "wakeWordEnabled": false,
+  "wakePhrase": "hey yashi",
+  "micDeviceId": "",
+  "sensitivity": 60,
+  "animations": true
+}

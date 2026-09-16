@@ -1,0 +1,28 @@
+# Yashi Desktop Control Agent — Python dependencies
+# Install with:
+#   python3 -m pip install -r requirements.txt
+# Then install the Playwright browser once:
+#   python3 -m playwright install chromium
+#
+# NOTE: pytesseract also requires the Tesseract OCR engine.
+#       On macOS: brew install tesseract
+#       OCR tools will gracefully report "unavailable" if it is missing;
+#       all other capabilities work without it.
+
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+pyautogui==0.9.54
+playwright==1.49.1
+psutil==6.1.1
+pyperclip==1.9.0
+pytesseract==0.3.13
+Pillow==11.0.0
+pygetwindow==0.0.9
+Send2Trash==1.8.3
+python-multipart==0.0.20
+# Best-effort NVIDIA GPU stats; optional import (graceful fallback if absent)
+nvidia-ml-py3==7.352.0
+# macOS brightness control (optional)
+screen-brightness-control==0.25.0
+# Wikipedia lookup (searchWikipedia / readWikipedia tools)
+Wikipedia-API==0.8.0

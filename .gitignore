@@ -1,0 +1,72 @@
+# Node dependencies & caches
+node_modules/
+.npm
+.eslintcache
+
+# Production and test outputs
+dist/
+coverage/
+release/
+
+# App Icons are preserved, but other build artifacts are ignored
+build/*
+!build/icon.*
+
+# Frozen Python agent build artifacts (PyInstaller)
+agent_dist/
+agent_build/
+*.spec.bak
+
+# Python byte-code / caches / environments
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+ENV/
+
+# Secrets, private credentials, and environment variables
+.env
+.env.*
+!.env.example
+*.enc
+secrets.json
+secrets.json.enc
+
+# Local runtime logs and conversation sessions
+logs/
+*.log
+sessions/
+conversation_history/
+
+# Local personal state and test files
+memories.json
+ShepamNotes.txt
+debug.txt
+tools.txt
+basic_numbers.py
+hello.py
+generate_os_analysis_pdf.py
+generate_simple_pdf.py
+Desktop/
+Documents/
+Downloads/
+cn_papers/
+ai-gateway/
+assets/.aistudio/
+
+# OS and Editor artifacts
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+.vscode/
+.idea/
+.claude/
+.zcode/
