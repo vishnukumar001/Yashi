@@ -136,9 +136,9 @@ export function confirmOutcome(
   toolName: string,
   mode: DesktopConfirmationMode,
 ): ConfirmOutcome {
-  // Browser-UI tools: always at least voice; banner in "always" mode.
+  // Browser-UI tools: banner in "always" mode, otherwise run immediately (safe user-requested navigation & media)
   if (BROWSER_UI_TOOLS.has(toolName)) {
-    return mode === "always" ? "banner" : "voice";
+    return mode === "always" ? "banner" : "none";
   }
 
   const tier = riskTierOf(toolName);

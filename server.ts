@@ -1,6 +1,8 @@
 import express from "express";
 import http from "http";
 import path from "path";
+import { spawn, execSync } from "child_process";
+import crypto from "crypto";
 import { WebSocketServer } from "ws";
 import { GoogleGenAI, Modality, Type, LiveServerMessage } from "@google/genai/node";
 import dotenv from "dotenv";
@@ -330,7 +332,6 @@ let desktopAgentVerified = false;
  * even if Yashi's node process is killed.
  */
 function spawnDesktopAgent(): void {
-  const { spawn } = require("child_process");
   const agentToken = process.env.YASHI_AGENT_TOKEN || "";
   const agentEnv = {
     ...process.env,
@@ -364,12 +365,15 @@ function spawnDesktopAgent(): void {
   // Development fallback: run the agent from source using a local Python.
   const candidates = [
     process.env.YASHI_PYTHON,
+    path.join(process.cwd(), ".venv", "bin", "python3"),
+    path.join(process.cwd(), ".venv", "bin", "python"),
+    path.join(process.cwd(), ".venv", "Scripts", "python.exe"),
     "python3",
     "python",
   ].filter(Boolean) as string[];
   const py = candidates.find((p) => {
     try {
-      require("child_process").execSync(`"${p}" --version`, { stdio: "ignore" });
+      execSync(`"${p}" --version`, { stdio: "ignore" });
       return true;
     } catch {
       return false;
@@ -1350,7 +1354,6 @@ res.setHeader("Cache-Control", "public, max-age=60");
       const composeDir = path.join(DATA_DIR, "vuln_apps", appId);
       fs.mkdirSync(composeDir, { recursive: true });
       fs.writeFileSync(path.join(composeDir, "docker-compose.yml"), app.compose);
-      const { spawn } = require("child_process");
       const child = spawn("docker", ["compose", "up", "-d"], { cwd: composeDir, stdio: "pipe" });
       child.stdout?.on("data", (d: any) => console.log(`[Docker] ${d}`));
       child.stderr?.on("data", (d: any) => console.error(`[Docker] ${d}`));
@@ -1368,7 +1371,6 @@ res.setHeader("Cache-Control", "public, max-age=60");
     try {
       const { appId } = req.body;
       const composeDir = path.join(DATA_DIR, "vuln_apps", appId);
-      const { spawn } = require("child_process");
       const child = spawn("docker", ["compose", "down", "-v"], { cwd: composeDir });
       child.on("exit", (code: number) => {
         if (code === 0) fs.rmSync(composeDir, { recursive: true, force: true });
@@ -1445,7 +1447,6 @@ res.setHeader("Cache-Control", "public, max-age=60");
     try {
       const { key, value, passphrase } = req.body;
       if (!key || !value || !passphrase) return res.status(400).json({ error: "key, value, passphrase required" });
-      const crypto = require("crypto");
       const iv = crypto.randomBytes(12);
       const cipher = crypto.createCipheriv("aes-256-gcm", crypto.scryptSync(passphrase, "salt", 32), iv);
       const enc = Buffer.concat([cipher.update(value, "utf8"), cipher.final()]);
@@ -1464,7 +1465,6 @@ res.setHeader("Cache-Control", "public, max-age=60");
       const { key, passphrase } = req.body;
       if (!key || !passphrase) return res.status(400).json({ error: "key, passphrase required" });
       if (!fs.existsSync(VAULT_FILE)) return res.status(404).json({ error: "Vault empty" });
-      const crypto = require("crypto");
       const vault = JSON.parse(fs.readFileSync(VAULT_FILE, "utf-8"));
       if (!vault[key]) return res.status(404).json({ error: "Key not found" });
       const iv = Buffer.from(vault[key].iv, "base64");

@@ -289,8 +289,12 @@ export function ApiKeyGate({ children }: { children: ReactNode }) {
                 All Set, {userName || "there"}!
               </h2>
               <p className="mt-2 text-xs text-white/60">
-                Configuration verified and encrypted. Welcome to Yashi.
+                Configuration verified and encrypted locally.
               </p>
+              <div className="mt-4 inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-400/30 text-cyan-300 text-xs font-mono tracking-wide">
+                <Sparkles className="h-3.5 w-3.5 text-cyan-400" />
+                <span>Click the core or press Space to awaken Yashi</span>
+              </div>
             </div>
           )}
         </div>

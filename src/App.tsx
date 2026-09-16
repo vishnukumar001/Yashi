@@ -521,6 +521,23 @@ export default function App() {
       sessionRef.current.disconnect();
     }
   };
+
+  // Spacebar hotkey listener: press Space anywhere (outside input fields) to toggle/awake Yashi
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const tag = (document.activeElement?.tagName || "").toLowerCase();
+      if (tag === "input" || tag === "textarea" || (document.activeElement as HTMLElement)?.isContentEditable) {
+        return;
+      }
+      if (e.code === "Space") {
+        e.preventDefault();
+        handleToggleConnection();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [state]);
+
   // V2: keep the ref in sync so the wake-word callback calls this exact handler.
   connectHandlerRef.current = handleToggleConnection;
 
@@ -886,43 +903,77 @@ export default function App() {
         </div>
 
         {/* Glossy Beautiful Primary Connector Core Node */}
-        <div className="flex items-center justify-center relative mb-4">
-          <button 
-            onClick={handleToggleConnection}
-            className={`w-20 h-20 rounded-full flex items-center justify-center transition-all duration-500 cursor-pointer ${
-              state === "disconnected"
-                ? "bg-white/10 hover:bg-white/15 border border-white/15 text-white shadow-[0_0_20px_rgba(255,255,255,0.02)] hover:scale-105 active:scale-95"
-                : state === "listening"
-                ? "bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-400/80 text-cyan-200 shadow-[0_0_35px_rgba(34,211,238,0.3)] animate-pulse scale-105"
-                : state === "speaking"
-                ? "bg-purple-500/90 hover:bg-purple-600 border border-purple-400/95 text-white shadow-[0_0_35px_rgba(168,85,247,0.4)] scale-105"
-                : "bg-amber-600 border border-amber-300 text-white animate-spin"
-            }`}
-            title={state === "disconnected" ? "Awake Yashi" : "Sleep core"}
-          >
-            {state === "disconnected" ? (
-              <Power className="opacity-80" size={24} />
-            ) : state === "connecting" ? (
-              <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
-            ) : state === "listening" ? (
-              <Mic size={24} className="text-cyan-200" />
-            ) : (
-              <Volume2 size={24} className="text-white" />
-            )}
-          </button>
-
-          {/* Quiet Reset Projection Anchor */}
-          {(activeProjectorUrl || errorText) && (
+        <div className="flex flex-col items-center justify-center relative mb-4 gap-3">
+          <div className="flex items-center justify-center relative">
             <button 
-              onClick={() => {
-                if (activeProjectorUrl) setActiveProjectorUrl(null);
-                setErrorText(null);
-              }}
-              className="absolute right-[-60px] p-2 rounded-full hover:bg-white/5 text-slate-400 hover:text-white transition duration-150 cursor-pointer"
-              title="Reset Screen Broadcasts"
+              onClick={handleToggleConnection}
+              className={`w-20 h-20 rounded-full flex items-center justify-center transition-all duration-500 cursor-pointer ${
+                state === "disconnected"
+                  ? "bg-white/10 hover:bg-white/15 border border-white/15 text-white shadow-[0_0_25px_rgba(255,255,255,0.06)] hover:scale-105 active:scale-95"
+                  : state === "listening"
+                  ? "bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-400/80 text-cyan-200 shadow-[0_0_35px_rgba(34,211,238,0.3)] animate-pulse scale-105"
+                  : state === "speaking"
+                  ? "bg-purple-500/90 hover:bg-purple-600 border border-purple-400/95 text-white shadow-[0_0_35px_rgba(168,85,247,0.4)] scale-105"
+                  : "bg-amber-600 border border-amber-300 text-white animate-spin"
+              }`}
+              title={state === "disconnected" ? "Click or press Space to awaken Yashi" : "Click or press Space to sleep core"}
             >
-              <X size={16} />
+              {state === "disconnected" ? (
+                <Power className="opacity-80" size={24} />
+              ) : state === "connecting" ? (
+                <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              ) : state === "listening" ? (
+                <Mic size={24} className="text-cyan-200" />
+              ) : (
+                <Volume2 size={24} className="text-white" />
+              )}
             </button>
+
+            {/* Quiet Reset Projection Anchor */}
+            {(activeProjectorUrl || errorText) && (
+              <button 
+                onClick={() => {
+                  if (activeProjectorUrl) setActiveProjectorUrl(null);
+                  setErrorText(null);
+                }}
+                className="absolute right-[-60px] p-2 rounded-full hover:bg-white/5 text-slate-400 hover:text-white transition duration-150 cursor-pointer"
+                title="Reset Screen Broadcasts"
+              >
+                <X size={16} />
+              </button>
+            )}
+          </div>
+
+          {/* User cue badges: making audio state and interactions 100% obvious */}
+          {state === "disconnected" && (
+            <button
+              onClick={handleToggleConnection}
+              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-400/30 text-cyan-300 hover:bg-cyan-500/20 hover:border-cyan-400/50 transition cursor-pointer text-xs font-mono tracking-wider animate-pulse shadow-[0_0_20px_rgba(34,211,238,0.15)]"
+            >
+              <Sparkles size={13} className="text-cyan-400" />
+              <span>Click core or press Space to start speaking</span>
+            </button>
+          )}
+
+          {state === "connecting" && (
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/10 border border-amber-400/30 text-amber-300 text-xs font-mono tracking-wider">
+              <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
+              <span>Connecting live audio bridge…</span>
+            </div>
+          )}
+
+          {state === "listening" && (
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-cyan-500/15 border border-cyan-400/50 text-cyan-200 text-xs font-mono tracking-wider shadow-[0_0_20px_rgba(34,211,238,0.2)]">
+              <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping" />
+              <span>Listening — speak your command freely</span>
+            </div>
+          )}
+
+          {state === "speaking" && (
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-purple-500/20 border border-purple-400/50 text-purple-200 text-xs font-mono tracking-wider shadow-[0_0_20px_rgba(168,85,247,0.2)]">
+              <span className="w-2 h-2 rounded-full bg-purple-400 animate-pulse" />
+              <span>Yashi is speaking (interrupt anytime)</span>
+            </div>
           )}
         </div>
 

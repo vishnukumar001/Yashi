@@ -111,7 +111,7 @@ Ensure you have the following installed on your machine:
 
 ---
 
-## Installation
+## Quick Start (Recommended)
 
 ### 1. Clone the Repository
 
@@ -120,93 +120,100 @@ git clone https://github.com/vishnukumar001/Yashi.git
 cd Yashi
 ```
 
-### 2. Install Node Dependencies
+### 2. Launch with One Command
 
-```bash
-npm install
-```
-
-### 3. Install Python Agent Dependencies
-
-```bash
-npm run agent:install
-# (Equivalent to: python3 -m pip install -r desktop_agent/requirements.txt)
-```
-
-*(Optional)* Install the Playwright browser engine:
-```bash
-npm run agent:playwright
-```
-
----
-
-## First-Run Experience & API Key Setup
-
-Yashi is designed to be completely secure and zero-config out of the box. You do **not** need to edit source code to enter your credentials.
-
-When you launch Yashi for the first time:
-
-```
-First Launch
-     ↓
-Welcome to Yashi: Enter your Name or Callsign
-     ↓
-Enter your Google Gemini API Key
-     ↓
-Instant Verification & Encrypted Local Storage
-     ↓
-Yashi Launches Ready for Voice & Control
-```
-
-1. **Enter Your Name**: Enter what Yashi should call you (e.g., your name or callsign). Yashi immediately personalizes her speech, greetings, and system instructions for you.
-2. **Enter Your Gemini API Key**: Paste your Gemini key from [Google AI Studio](https://aistudio.google.com/apikey).
-3. **Automatic Verification**: The backend validates the key live against Google GenAI models. Once verified, it is encrypted via **AES-256-GCM** using a machine-derived key unique to your system and written to `secrets.json.enc`.
-4. **Zero Secret Leakage**: The key is never returned to the frontend, never committed to Git, and never shared.
-
-> ⚠️ **Important Security Notice**: Never share your API key or commit `.env` or `secrets.json*` files to any public repository.
-
----
-
-## Running Yashi
-
-### macOS All-in-One Launcher
-
+#### On macOS / Linux:
 ```bash
 chmod +x start-yashi.sh
 ./start-yashi.sh
 ```
 
-This cleans any stale ports, checks dependencies, launches the Python desktop agent on port 8765, boots the Node server on port 3000, and opens your browser.
+The launcher automatically:
+- Checks Node.js and installs dependencies (`npm install`).
+- Creates an isolated Python virtual environment (`.venv`).
+- Installs Python desktop agent dependencies without system permission issues (`PEP 668`).
+- Launches the 240-tool Desktop Control Agent on port `8765`.
+- Starts the Yashi Node server on port `3000` and opens your browser.
 
-### Windows All-in-One Launcher
-
+#### On Windows:
 Double-click `start-yashi.bat` or run in Command Prompt:
-
 ```cmd
 start-yashi.bat
 ```
 
-### Running in Full Electron Desktop App
+---
 
-To run inside the native Electron desktop shell:
+## First-Run Experience & Awakening Guide
 
-```bash
-npm run app
+Yashi is designed to be completely secure and zero-config out of the box. You do **not** need to edit code to configure credentials:
+
+```
+Clone & Launch (./start-yashi.sh)
+              ↓
+1. Enter your Name or Callsign (e.g., "Rudra", "Alex")
+              ↓
+2. Enter your Google Gemini API Key
+              ↓
+Instant Live Verification & AES-256-GCM Encrypted Vault Storage
+              ↓
+Click Glowing Core or Press Spacebar to Awaken Voice Link
+              ↓
+Speak Your First Command Freely!
 ```
 
-### Running Manually (Two Terminals)
+### How to Talk to Yashi
+1. **Awaken the Core**: Once onboarding completes, **click the glowing Core Orb in the center** or **press the Spacebar**.
+2. **Microphone Permission**: Allow microphone access in your browser when prompted.
+3. **Speak Naturally**: When the indicator pulses `"Listening — speak your command freely"`, speak into your microphone:
+   - *"Hello Yashi, who are you?"*
+   - *"Open YouTube and search for cyberpunk ambient music."*
+   - *"Take a screenshot and tell me what's on my screen."*
+   - *"Check my system specs and battery health."*
+   - *"Change your core atmosphere to crimson."*
+4. **Interrupt Anytime**: Yashi supports real-time duplex streaming — talk over her at any moment and she pauses immediately to listen to you.
 
-If you prefer to run the services separately during development:
+---
 
+## Manual Installation (Optional)
+
+If you prefer to install and run the services in separate terminal windows:
+
+### Step 1: Install Node Dependencies
 ```bash
-# Terminal 1: Desktop Control Agent
-python3 -m uvicorn desktop_agent.main:app --host 127.0.0.1 --port 8765
+npm install
+```
 
-# Terminal 2: Node Backend & React UI
+### Step 2: Setup Python Virtual Environment
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r desktop_agent/requirements.txt
+```
+
+*(Optional)* Install Playwright Chromium for browser automation:
+```bash
+python3 -m playwright install chromium
+```
+
+### Step 3: Run the Services
+
+**Terminal 1 — Desktop Control Agent:**
+```bash
+source .venv/bin/activate
+python -m uvicorn desktop_agent.main:app --host 127.0.0.1 --port 8765
+```
+
+**Terminal 2 — Node Server & UI:**
+```bash
 npm run dev
 ```
 
 Navigate to `http://localhost:3000` in your browser.
+
+### Running in Full Electron Desktop App
+```bash
+npm run app
+```
 
 ---
 

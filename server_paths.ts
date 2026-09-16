@@ -16,6 +16,7 @@
 import fs from "fs";
 import path from "path";
 import crypto from "crypto";
+import { execSync } from "child_process";
 
 /** Writable per-user data directory. Falls back to cwd in development. */
 export const DATA_DIR: string =
@@ -47,7 +48,6 @@ function getEncryptionKey(): Buffer {
   try {
     if (process.platform === "darwin") {
       // macOS: use IOPlatformUUID via ioreg
-      const { execSync } = require("child_process");
       machineId = execSync("ioreg -rd1 -c IOPlatformExpertDevice | grep IOPlatformUUID", { encoding: "utf-8", timeout: 2000 })
         .split('"')[3] || "";
     } else if (process.platform === "linux") {
@@ -61,7 +61,6 @@ function getEncryptionKey(): Buffer {
       }
     } else if (process.platform === "win32") {
       // Windows: MachineGuid from registry
-      const { execSync } = require("child_process");
       machineId = execSync('reg query HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Cryptography /v MachineGuid', { encoding: "utf-8", timeout: 2000 })
         .split("\\s+")?.pop()?.trim() || "";
     }
@@ -80,7 +79,6 @@ function getLegacyEncryptionKey(): Buffer {
   let machineId = DATA_DIR;
   try {
     if (process.platform === "darwin") {
-      const { execSync } = require("child_process");
       machineId = execSync("ioreg -rd1 -c IOPlatformExpertDevice | grep IOPlatformUUID", { encoding: "utf-8", timeout: 2000 })
         .split('"')[3] || "";
     } else if (process.platform === "linux") {
@@ -92,7 +90,6 @@ function getLegacyEncryptionKey(): Buffer {
         }
       }
     } else if (process.platform === "win32") {
-      const { execSync } = require("child_process");
       machineId = execSync('reg query HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Cryptography /v MachineGuid', { encoding: "utf-8", timeout: 2000 })
         .split("\\s+")?.pop()?.trim() || "";
     }
